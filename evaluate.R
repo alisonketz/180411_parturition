@@ -1,13 +1,14 @@
 
 evaluate= function(alarm,possible.hits,nInd,vitdropday){
     if(nInd==1){
+
         d=alarm[[1]][alarm[[1]][,2]<=vitdropday,]
         
         # TRUE POSITIVE:  groundtruth data  says it's an anomaly and so algorithm does.
-        tp = dim(d[d[,2]==vitdropday,])[1]
+        tp = sum(d[,3],na.rm=TRUE)
         
         # FALSE POSITIVE:  groundtruth data says it's not an anomaly, but algorithm says anomaly.
-        fp = dim(d[d[,2]<vitdropday,])[1]
+        fp = sum(d[,3]==0,na.rm=TRUE)
         
         # FALSE NEGATIVE: groundtruth data says it's an anomaly, but algorithm says not anomaly.
         fn = possible.hits - tp
@@ -37,10 +38,10 @@ evaluate= function(alarm,possible.hits,nInd,vitdropday){
         for(j in 1:nInd){
 
             # TRUE POSITIVE:  groundtruth data  says it's an anomaly and so algorithm does.
-            tp[j] = sum(d[[j]][,2]==vitdropday[j])
+            tp[j] = sum(d[[j]][,3],na.rm=TRUE)
             
             # FALSE POSITIVE:  groundtruth data says it's not an anomaly, but algorithm says anomaly.
-            fp[j] = sum(d[[j]][,2]<vitdropday[j])
+            fp[j] = sum(d[[j]][,3]==0,na.rm=TRUE)
             
             # FALSE NEGATIVE: groundtruth data says it's an anomaly, but algorithm says not anomaly.
             fn[j] = possible.hits[j] - tp[j]
@@ -52,10 +53,9 @@ evaluate= function(alarm,possible.hits,nInd,vitdropday){
         fn.pop = sum(fn)
         
         # precision and recall
-        out.prec = tp.pop/(tp.pop+fp.pop)
-        out.recall = tp.pop/(tp.pop+fn.pop)
-        
         # F1 value
+        out.prec =ifelse(tp.pop+fp.pop == 0,0,tp.pop/(tp.pop+fp.pop))
+        out.recall =ifelse(tp.pop+fp.pop == 0,0,tp.pop/(tp.pop+fn.pop))
         out.F1 =ifelse((out.prec+out.recall) == 0,0,(2*out.prec*out.recall)/(out.prec+out.recall))
 
     }#endelse
