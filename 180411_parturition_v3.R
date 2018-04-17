@@ -26,7 +26,7 @@ setwd("~/Documents/Parturition/180411_parturition")
 ### Load previous runs
 ###
 
-# load("anomaly_v3.Rdata")
+load("anomaly_v3.Rdata")
 
 ###
 ### Load VIT data
