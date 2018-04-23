@@ -3,13 +3,14 @@ training = function(d,eps,pw=126,vd){
     #d is dataframe of features, 
     #the first column is the id
     #the second column is the julian day of observation
-    
+    #the third column is the labeled anomaly (1) for vit drop event
+  
     nCovs = dim(d)[2]-3
     id = unique(d[,1])
     nInd = length(id)
     ci = 4:dim(d)[2]
 
-    if(length(eps)!=nCovs){cat("length(epsilon) != number covariates, try again \n");return}
+    if(length(eps)!=nCovs){cat("length(epsilon) != number features, try again \n");return}
     if(length(vd)!=nInd){cat("length(vitdropday) != number individuals, try again \n");return}
     
     #For individual case, run anomaly dection on single individual
@@ -22,9 +23,9 @@ training = function(d,eps,pw=126,vd){
             ind.sd =  sd(d[d[,2]<pw,ci],na.rm=TRUE)
 
             # detect.quant = quantile(d[d[,2]<(vd-2),ci],probs=eps,na.rm=TRUE)
-            detect.quant = quantile(d[,ci],probs=eps,na.rm=TRUE)
+            # detect.quant = quantile(d[,ci],probs=eps,na.rm=TRUE)
             # detect.quant = quantile(d[d[,2]<pw,ci],probs=eps,na.rm=TRUE)
-            # detect.quant = quantile(d.temp[,ci],probs=eps,na.rm=TRUE)
+            detect.quant = quantile(d.temp[,ci],probs=eps,na.rm=TRUE)
 
             threshold.density = dnorm(detect.quant,ind.mean,ind.sd)
             threshold.p = pnorm(detect.quant,mean=ind.mean,sd=ind.sd)
@@ -47,12 +48,9 @@ training = function(d,eps,pw=126,vd){
                 detect.quant=rep(NA,nCovs)
                 for(i in 1:nCovs){
                   # detect.quant[i] = quantile(d[d[,2]<(vd-2),i+3],probs=eps[i],na.rm=TRUE)
-                  detect.quant[i] = quantile(d[,i+3],probs=eps[i],na.rm=TRUE)
+                  # detect.quant[i] = quantile(d[,i+3],probs=eps[i],na.rm=TRUE)
                   # detect.quant[i] = quantile(d[d[,2]<pw,i+3],probs=eps[i],na.rm=TRUE)
-                  # detect.quant[i] = quantile(d.temp[,i+3],probs=eps[i],na.rm=TRUE)
-                  
-    
-                  # detect.quant[i] = quantile(d[d[,2]<(vd-2),i+3],probs=eps[i],na.rm=TRUE)
+                  detect.quant[i] = quantile(d.temp[,i+3],probs=eps[i],na.rm=TRUE)
                 }
                 ind.mean = apply(d[d[,2]<pw,ci],2,mean,na.rm=TRUE)
                 ind.sd = apply(d[d[,2]<pw,ci],2,sd,na.rm=TRUE)
@@ -109,9 +107,9 @@ training = function(d,eps,pw=126,vd){
                 ind.sd[j] = sd(d.temp1[d.temp1[,2]<pw,ci],na.rm=TRUE)
 
                 # detect.quant[j]=quantile(as.numeric(d.temp1[d.temp1[,2]<(vd[j]-2),ci]),eps,na.rm=TRUE)
-                detect.quant[j]=quantile(as.numeric(d.temp1[,ci]),eps,na.rm=TRUE)
+                # detect.quant[j]=quantile(as.numeric(d.temp1[,ci]),eps,na.rm=TRUE)
                 # detect.quant[j]=quantile(as.numeric(d.temp1[d.temp1[,2]<pw,ci]),eps,na.rm=TRUE)
-                # detect.quant[j]=quantile(as.numeric(d.temp1[d.temp1[,2]>=pw,ci]),eps,na.rm=TRUE)
+                detect.quant[j]=quantile(as.numeric(d.temp1[d.temp1[,2]>=pw,ci]),eps,na.rm=TRUE)
 
                 threshold.density[j] = dnorm(detect.quant[j],ind.mean[j],ind.sd[j])
                 threshold.p[j] = pnorm(detect.quant[j],mean=ind.mean[j],sd=ind.sd[j])
@@ -149,9 +147,9 @@ training = function(d,eps,pw=126,vd){
 
                 for(i in 1:nCovs){
                   # detect.quant[i,j] = quantile(d.temp1[d.temp1[,2]<(vd[j]-2),i+3],probs=eps[i],na.rm=TRUE)
-                  detect.quant[i,j] = quantile(d.temp1[,i+3],probs=eps[i],na.rm=TRUE)
+                  # detect.quant[i,j] = quantile(d.temp1[,i+3],probs=eps[i],na.rm=TRUE)
                   # detect.quant[i,j] = quantile(d.temp1[d.temp1[,2]<pw,i+3],probs=eps[i],na.rm=TRUE)
-                  # detect.quant[i,j] = quantile(d.temp1[d.temp1[,2]>=pw,i+3],probs=eps[i],na.rm=TRUE)
+                  detect.quant[i,j] = quantile(d.temp1[d.temp1[,2]>=pw,i+3],probs=eps[i],na.rm=TRUE)
                  }
                 
                 threshold.density[j] = dmvnorm(detect.quant[,j],ind.mean[,j],diag(ind.sd[,j]))

@@ -30,16 +30,14 @@ loo.train = function(d.train,part.window=126,ph,vdrop){
               train.cov[h,k,3]=eval.temp$out.F1# calculate eval = recall
             }
           }
-          browser()
           compare=apply(train.cov,c(1,3),max,na.rm=TRUE)
           for(h in 1:nCovs){
             for(i in 1:3){
-              decide[h,i]=min(which(train.cov[h,,i]==compare[h,i]))
+              decide[h,i]=mean(which(train.cov[h,,i]==compare[h,i]))/100
             }
           }
-          decide=decide/100
           d.ind=d.train[d.train[,1]==individs[j],]
-          fit.test= training_test(d=d.ind,pw=part.window,eps=decide[,m],vd=vdrop[j])# fit model
+          fit.test=training_test(d=d.ind,pw=part.window,eps=decide[,m],vd=vdrop[j])# fit model
           # fit.test = anomalyDetect(n.vit=1,id=individs[j],d=d.ind,eps=k/100,covs.indx = 4:(3+nCovs))
           eval.test=evaluate(alarm=fit.test$alarm,possible.hits=ph[j],nInd=1,vitdropday = vdrop[j])
           loo.indx=j+(m-1)*nInd.train
@@ -47,6 +45,5 @@ loo.train = function(d.train,part.window=126,ph,vdrop){
           loo.fittest[[loo.indx]]=fit.test
       }    
       }
-browser()
 return(list(loo.eval = loo.eval,decide=decide,train.cov=train.cov,compare = compare,loo.fittest=loo.fittest))
 }
