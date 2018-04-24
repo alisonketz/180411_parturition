@@ -3,7 +3,7 @@ loo.train = function(d.train,part.window=126,ph,vdrop){
       ###
       ### testing the training evaluation function
       ###
-      source("training_detector.R")
+      source("training_test_detector.R")
       source("training_detector.R")
       source("evaluate.R")
   

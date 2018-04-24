@@ -472,6 +472,7 @@ training_test(d.train,eps=epsilon,pw=part.window,vd=vitdrop)
 ##############################################################################################
 ##############################################################################################
 
+source("training_function_v2.R")
 source("training_function.R")
 source("training_detector.R")
 source("training_test_detector.R")
@@ -479,7 +480,7 @@ source("evaluate.R")
 # source("anomalyDetect.R")
 
 # starting=Sys.time()
-fit.loo=loo.train(d.train=d.dos,part.window=126,ph=possible.hits,vdrop=vitdrop)
+fit.loo=loo.train.v2(d.train=d.dos,part.window=126,ph=possible.hits,vdrop=vitdrop)
 for(j in 1:10){
   beep(sound=5)
 }

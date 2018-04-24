@@ -1,10 +1,10 @@
-loo.train = function(d.train,part.window=126,ph,vdrop){
+loo.train.v2 = function(d.train,part.window=126,ph,vdrop){
 
       ###
       ### testing the training evaluation function
       ###
       source("training_detector.R")
-      source("training_detector.R")
+      source("training_test_detector.R")
       source("evaluate.R")
   
       individs = unique(d.train[,1]) # vector of id's for individuals in the training set
