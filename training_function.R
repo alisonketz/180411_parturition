@@ -14,9 +14,9 @@ loo.train = function(d.train,part.window=126,ph,vdrop){
       loo.eval=rep(list(),3*nInd.train)# there are 3 criteria we can use to tune epsilon for anomaly detection
       loo.fittest=rep(list(),3*nInd.train)# there are 3 criteria we can use to tune epsilon for anomaly detection
       nLoo=nInd.train-1 #number in leave one out training
-      decide=matrix(NA,nr=nCovs,nc=3)
-      decide.indx=list()
-      
+      decide=rep(list(matrix(NA,nr=nCovs,nc=3)),nInd.train)
+      eval=array(NA,c(nInd.train,3,3))
+
       for(m in 1:3){
         for(j in 1:nInd.train){
           df=d.train[d.train[,1]!=individs[j],]
@@ -27,26 +27,63 @@ loo.train = function(d.train,part.window=126,ph,vdrop){
               eval.temp=evaluate(alarm=fit.train$alarm,possible.hits=ph[-j],nInd=nLoo,vitdropday = vdrop[-j])
               train.cov[h,k,1]=eval.temp$out.prec
               train.cov[h,k,2]=eval.temp$out.recall
-              train.cov[h,k,3]=eval.temp$out.F1# calculate eval = recall
+              train.cov[h,k,3]=eval.temp$out.F1
             }
           }
-          browser()
-          compare=apply(train.cov,c(1,3),max,na.rm=TRUE)
-          for(h in 1:nCovs){
-            for(i in 1:3){
-              decide[h,i]=min(which(train.cov[h,,i]==compare[h,i]))
-            }
-          }
-          decide=decide/100
+          
+          decide[[j]]=apply(train.cov,c(1,3),which.max)/100
           d.ind=d.train[d.train[,1]==individs[j],]
-          fit.test= training_test(d=d.ind,pw=part.window,eps=decide[,m],vd=vdrop[j])# fit model
-          # fit.test = anomalyDetect(n.vit=1,id=individs[j],d=d.ind,eps=k/100,covs.indx = 4:(3+nCovs))
+          fit.test=training_test(d=d.ind,pw=part.window,eps=decide[[j]][,m],vd=vdrop[j])# fit model
           eval.test=evaluate(alarm=fit.test$alarm,possible.hits=ph[j],nInd=1,vitdropday = vdrop[j])
-          loo.indx=j+(m-1)*nInd.train
-          loo.eval[[loo.indx]]=eval.test
-          loo.fittest[[loo.indx]]=fit.test
-      }    
+          eval[j,m,1]=eval.test$out.prec
+          eval[j,m,2]=eval.test$out.recall
+          eval[j,m,3]=eval.test$out.F1
+        }    
       }
-browser()
-return(list(loo.eval = loo.eval,decide=decide,train.cov=train.cov,compare = compare,loo.fittest=loo.fittest))
+      #epsilon averaged over maximum of results based on precision
+      
+      prec.max = max(eval[,1,1])
+      prec.indx = which(eval[,1,1]==prec.max)
+      prec.save=rep(NA,nCovs)
+      for(i in prec.indx){
+        prec.save=cbind(prec.save,decide[[i]][,1])
+      }
+      prec.save=prec.save[,-1]
+
+      #epsilon averaged over maximum of results based on recall
+      
+      recall.max = max(eval[,2,2])
+      recall.indx = which(eval[,2,2]==recall.max)
+      recall.save=rep(NA,nCovs)
+      for(i in recall.indx){
+        recall.save=cbind(recall.save,decide[[i]][,2])
+      }
+      recall.save=recall.save[,-1]
+
+      #epsilon averaged over maximum of results based on F1
+      F1.max = max(eval[,3,3])
+      F1.indx = which(eval[,3,3]==F1.max)
+      F1.save=rep(NA,nCovs)
+      for(i in F1.indx){
+          F1.save=cbind(F1.save,decide[[7]][,3])
+      }
+      F1.save=F1.save[,-1]
+
+      if(!is.matrix(prec.save)){
+        prec.eps = prec.save
+      }else{
+        prec.eps = apply(prec.save,1,median)
+      }
+      if(!is.matrix(recall.save)){
+        recall.eps = recall.save
+      }else{
+        recall.eps = apply(recall.save,1,median)
+      }
+      if(!is.matrix(F1.save)){
+        F1.eps = F1.save
+      }else{
+        F1.eps = apply(F1.save,1,median)
+      }
+      epsilon.star = cbind(prec.eps,recall.eps,F1.eps)
+      return(list(eval=eval,decide=decide,train.cov=train.cov,epsilon.star=epsilon.star))
 }

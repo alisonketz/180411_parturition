@@ -3,7 +3,7 @@ evaluate= function(alarm,possible.hits,nInd,vitdropday){
     if(nInd==1){
 
         d=alarm[[1]][alarm[[1]][,2]<=vitdropday,]
-        
+
         # TRUE POSITIVE:  groundtruth data  says it's an anomaly and so algorithm does.
         tp = sum(d[,3],na.rm=TRUE)
         
@@ -18,8 +18,8 @@ evaluate= function(alarm,possible.hits,nInd,vitdropday){
         fn.pop = fn
         
         # precision and recall
-        out.prec = tp.pop/(tp.pop+fp.pop)
-        out.recall = tp.pop/(tp.pop+fn.pop)
+        out.prec = ifelse((tp.pop+fp.pop)==0,0,tp.pop/(tp.pop+fp.pop))
+        out.recall = ifelse((tp.pop+fn.pop)==0,0,tp.pop/(tp.pop+fn.pop))
         
         # F1 value
         out.F1 =ifelse((out.prec+out.recall) == 0,0,(2*out.prec*out.recall)/(out.prec+out.recall))

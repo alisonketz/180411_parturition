@@ -1,10 +1,10 @@
-loo.train.v2 = function(d.train,part.window=126,ph,vdrop){
+loo.train = function(d.train,part.window=126,ph,vdrop){
 
       ###
       ### testing the training evaluation function
       ###
-      source("training_detector.R")
       source("training_test_detector.R")
+      source("training_detector.R")
       source("evaluate.R")
   
       individs = unique(d.train[,1]) # vector of id's for individuals in the training set
@@ -33,25 +33,18 @@ loo.train.v2 = function(d.train,part.window=126,ph,vdrop){
           compare=apply(train.cov,c(1,3),max,na.rm=TRUE)
           for(h in 1:nCovs){
             for(i in 1:3){
-              decide[h,i]=min(which(train.cov[h,,i]==compare[h,i]))/100
+              decide[h,i]=min(which(train.cov[h,,i]==compare[h,i]))
             }
           }
-        }#end j
-        
-        for(m in 1:3){
-          for(j in 1:nInd.train){
-            df=d.train[d.train[,1]!=individs[j],]
-            
-        
-          fit.test=training_test(d=d.train[j],pw=part.window,eps=decide[,m],vd=vdrop)# fit model
+
+          decide=decide/100
+          d.ind=d.train[d.train[,1]==individs[j],]
+          fit.test= training_test(d=d.ind,pw=part.window,eps=decide[,m],vd=vdrop[j])# fit model
           eval.test=evaluate(alarm=fit.test$alarm,possible.hits=ph[j],nInd=1,vitdropday = vdrop[j])
-          
-          # fit.test = anomalyDetect(n.vit=1,id=individs[j],d=d.ind,eps=k/100,covs.indx = 4:(3+nCovs))
           loo.indx=j+(m-1)*nInd.train
           loo.eval[[loo.indx]]=eval.test
           loo.fittest[[loo.indx]]=fit.test
       }    
       }
-      
-  return(list(loo.eval = loo.eval,decide=decide,train.cov=train.cov,compare = compare,loo.fittest=loo.fittest))
+return(list(loo.eval = loo.eval,decide=decide,train.cov=train.cov,compare = compare,loo.fittest=loo.fittest))
 }

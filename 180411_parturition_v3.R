@@ -12,6 +12,7 @@
 
 rm(list=ls())
 
+
 library(geosphere)
 library(lubridate)
 library(Hmisc)
@@ -472,18 +473,43 @@ training_test(d.train,eps=epsilon,pw=part.window,vd=vitdrop)
 ##############################################################################################
 ##############################################################################################
 
-source("training_function_v2.R")
 source("training_function.R")
+source("training_function_v2.R")
+source("training_function_v3.R")
+
 source("training_detector.R")
 source("training_test_detector.R")
 source("evaluate.R")
 # source("anomalyDetect.R")
 
-# starting=Sys.time()
-fit.loo=loo.train.v2(d.train=d.dos,part.window=126,ph=possible.hits,vdrop=vitdrop)
+starting=Sys.time()
+fit.loo=loo.train(d.train=d.dos,part.window=126,ph=possible.hits,vdrop=vitdrop)
+ending=Sys.time()
+total.time = ending-starting
+total.time
+
+# fit.loo.v2=loo.train.v2(d.train=d.dos,part.window=126,ph=possible.hits,vdrop=vitdrop)
+# fit.loo.v3=loo.train.v3(d.train=d.dos,part.window=126,ph=possible.hits,vdrop=vitdrop)
+
 for(j in 1:10){
   beep(sound=5)
 }
+
+#fitting with different data for determining the quantiles for the density threshold calculation
+# fit.loo.v1 = fit.loo#<(vd-2),test <(vd-2)
+# fit.loo.v2 = fit.loo#=1:nT,test <(vd-2)
+fit.loo.v3 = fit.loo#<pw,test <(vd-2)
+# fit.loo.v4 = fit.loo#>=pw,test <(vd-2)
+# fit.loo.v5 = fit.loo#<(vd-2), test <pw
+# fit.loo.v6 = fit.loo#=1:nT,test <pw
+# fit.loo.v7 = fit.loo#<pw,test <pw
+# fit.loo.v8 = fit.loo#>=pw,test <pw
+
+#v1,v2,
+
+
+
+
 
 # loo_train = function(d.train,part.window=126,ph,vdrop){
 # ending=Sys.time()
@@ -491,15 +517,13 @@ for(j in 1:10){
 # total.time
 
 fit.loo$decide
+fit.loo$epsilon.star
+
 fit.loo$train.cov[,,2]
 fit.loo$compare
 fit.loo$loo.eval
 fit.loo$train.cov[,,2]
 fit.loo$loo.fittest
-
-for(j in 1:10){
-  beep(sound=5)
-}
 
 ##############################################################################################
 ###
@@ -509,15 +533,15 @@ for(j in 1:10){
 ##############################################################################################
 
 ###precision final model
-fit.prec = training(d.dos,eps=fit.loo$decide[,1],pw=part.window,vd=vitdrop)# fit model
+fit.prec = training(d.dos,eps=fit.loo$epsilon.star[,1],pw=part.window,vd=vitdrop)# fit model
 eval.prec=evaluate(alarm=fit.prec$alarm,possible.hits=ph,nInd=nInd.train,vitdropday=vitdrop)
 
 ###recall final model
-fit.recall = training(d.dos,eps=fit.loo$decide[,2],pw=part.window,vd=vitdrop)# fit model
+fit.recall = training(d.dos,eps=fit.loo$epsilon.star[,2],pw=part.window,vd=vitdrop)# fit model
 eval.recall=evaluate(alarm=fit.recall$alarm,possible.hits=ph,nInd=nInd.train,vitdropday=vitdrop)
 
 ### F1 final model
-fit.F1 = training(d.dos,eps=fit.loo$decide[,3],pw=part.window,vd=vitdrop)# fit model
+fit.F1 = training(d.dos,eps=fit.loo$epsilon.star[,3],pw=part.window,vd=vitdrop)# fit model
 eval.F1=evaluate(alarm=fit.F1$alarm,possible.hits=ph,nInd=nInd.train,vitdropday=vitdrop)
 
 
@@ -706,10 +730,10 @@ save(epsilon,file='epsilon.Rdata')
 ##################################################################################################################################
 
 #fitting with different data for determining the quantiles for the density threshold calculation
-# fit.loo.v1 = fit.loo#<(vd-2),test <(vd-2)
+fit.loo.v1 = fit.loo#<(vd-2),test <(vd-2)
 # fit.loo.v2 = fit.loo#=1:nT,test <(vd-2)
 # fit.loo.v3 = fit.loo#<pw,test <(vd-2)
-fit.loo.v4 = fit.loo#>=pw,test <(vd-2)
+# fit.loo.v4 = fit.loo#>=pw,test <(vd-2)
 # fit.loo.v5 = fit.loo#<(vd-2), test <pw
 # fit.loo.v6 = fit.loo#=1:nT,test <pw
 # fit.loo.v7 = fit.loo#<pw,test <pw
